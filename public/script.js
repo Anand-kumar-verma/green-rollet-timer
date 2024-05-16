@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
       console.log("Socket.IO connection established.");
     });
   
-    socket.on("onemin", function (message) {
+    socket.on("oneminrollet", function (message) {
       console.log(message);
       message === 0 && spinRoulette();
     });
