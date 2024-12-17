@@ -7,11 +7,6 @@ app.use(express.static("public"));
 const jobRunByCroneAWSForWingoGame = async () => {
   console.log("functoin called");
   schedule.schedule("58 * * * * *", async function () {
-    // const period_id = await queryDb(
-    //   "SELECT win_transactoin FROM wingo_round_number WHERE win_id = 1;",
-    //   []
-    // );
-    // const period = period_id?.[0]?.win_transactoin;
     const reqBody = {
       language: 0,
       pageNo: 1,
@@ -21,6 +16,13 @@ const jobRunByCroneAWSForWingoGame = async () => {
       timestamp: 1734372964,
       typeId: 1,
     };
+    const agent = new (require("https").Agent)({
+      proxy: {
+        host: "proxy_host",
+        port: "proxy_port",
+      },
+    });
+
     await axios
       .post(
         `https://api.bigdaddygame.cc/api/webapi/GetNoaverageEmerdList`,
@@ -28,15 +30,14 @@ const jobRunByCroneAWSForWingoGame = async () => {
         {
           headers: {
             "Content-Type": "application/json",
+            "User-Agent": "PostmanRuntime/7.30.0",
           },
+          httpsAgent: agent,
         }
       )
       .then(async (result) => {
-        let q =
-          "INSERT INTO `colour_admin_result`(`gamesno`,`gameid`,`number`,`status`) VALUES(?,?,?,?);";
         let obj = result?.data?.data?.list?.[0];
         console.log(obj);
-        //  await queryDb(q, [Number(period) + 1, 1, obj?.number, 1]);
       })
       .catch((e) => {
         console.log(e);
