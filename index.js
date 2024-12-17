@@ -4,46 +4,62 @@ const { default: axios } = require("axios");
 const app = express();
 const port = 4000;
 app.use(express.static("public"));
+const puppeteer = require("puppeteer");
+
 const jobRunByCroneAWSForWingoGame = async () => {
-  console.log("functoin called");
+  console.log("Function called");
   schedule.schedule("58 * * * * *", async function () {
+    const url = "https://api.bigdaddygame.cc/api/webapi/GetNoaverageEmerdList";
     const reqBody = {
       language: 0,
       pageNo: 1,
       pageSize: 10,
       random: "764ad36b88a54a3b8d040838a9438dfb",
       signature: "E8438324D9EC6D487894F3F933B37EB0",
-      timestamp: 1734372964,
+      timestamp: Math.floor(Date.now() / 1000), // Ensure timestamp is dynamic
       typeId: 1,
     };
-    const agent = new (require("https").Agent)({
-      proxy: {
-        host: "proxy_host",
-        port: "proxy_port",
-      },
-    });
 
-    await axios
-      .post(
-        `https://api.bigdaddygame.cc/api/webapi/GetNoaverageEmerdList`,
-        reqBody,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "User-Agent": "PostmanRuntime/7.30.0",
-          },
-          httpsAgent: agent,
-        }
-      )
-      .then(async (result) => {
-        let obj = result?.data?.data?.list?.[0];
-        console.log(obj);
-      })
-      .catch((e) => {
-        console.log(e);
+    try {
+      const browser = await puppeteer.launch({ headless: true });
+      const page = await browser.newPage();
+
+      // Set headers to mimic a browser
+      await page.setUserAgent(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+      );
+      await page.setExtraHTTPHeaders({
+        "Content-Type": "application/json",
       });
+
+      // Navigate to API endpoint
+      await page.goto(url, {
+        waitUntil: "networkidle2",
+      });
+
+      // Perform API POST request
+      const result = await page.evaluate(async (body) => {
+        const response = await fetch(
+          "https://api.bigdaddygame.cc/api/webapi/GetNoaverageEmerdList",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+          }
+        );
+        return response.json();
+      }, reqBody);
+
+      console.log("Response Object:", result?.data?.list?.[0]);
+      await browser.close();
+    } catch (error) {
+      console.error("Puppeteer Error:", error.message);
+    }
   });
 };
+
 let y = true;
 if (y) {
   console.log("Waiting for the next minute to start...");
