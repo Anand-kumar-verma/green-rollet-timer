@@ -21,7 +21,11 @@ const jobRunByCroneAWSForWingoGame = async () => {
     };
 
     try {
-      const browser = await puppeteer.launch({ headless: true });
+      const browser = await puppeteer.launch({
+        headless: true,
+        executablePath:
+          "C:\\Users\\anand\\.cache\\puppeteer\\chrome\\win64-131.0.6778.108\\chrome-win64\\chrome.exe",
+      });
       const page = await browser.newPage();
 
       // Set headers to mimic a browser
